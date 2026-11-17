@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><NFe><infNFe Id="NFe-EXEMPLO-1002" versao="4.00">
+<ide><cUF>35</cUF><natOp>VENDA (EXEMPLO FICTICIO)</natOp><mod>55</mod><serie>1</serie><nNF>1002</nNF><dhEmi>2026-11-10T10:00:00-03:00</dhEmi><tpNF>1</tpNF><cMunFG>3550308</cMunFG></ide>
+<emit><CNPJ>00000000000000</CNPJ><xNome>EMPRESA EXEMPLO LTDA (FICTICIA)</xNome><enderEmit><UF>SP</UF></enderEmit></emit>
+<det nItem="1"><prod><cProd>EX100201</cProd><xProd>NOTEBOOK 15 POL 8GB</xProd><NCM>84713012</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>4200.00</vProd></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>4200.00</vBC><pICMS>12.00</pICMS><vICMS>504.00</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>4200.00</vBC><pPIS>1.65</pPIS><vPIS>69.30</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>4200.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>319.20</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="2"><prod><cProd>EX100202</cProd><xProd>CAMISETA ALGODAO ADULTO</xProd><NCM>61091000</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>890.00</vProd></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>890.00</vBC><pICMS>18.00</pICMS><vICMS>160.20</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>890.00</vBC><pPIS>1.65</pPIS><vPIS>14.69</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>890.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>67.64</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="3"><prod><cProd>EX100203</cProd><xProd>CIMENTO COMUM SACO 50KG</xProd><NCM>25232910</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>1450.00</vProd></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>1450.00</vBC><pICMS>12.00</pICMS><vICMS>174.00</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>1450.00</vBC><pPIS>1.65</pPIS><vPIS>23.93</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>1450.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>110.20</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="4"><prod><cProd>EX100204</cProd><xProd>DIPIRONA 500MG CX 10 COMP</xProd><NCM>30049099</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>320.00</vProd></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>320.00</vBC><pICMS>18.00</pICMS><vICMS>57.60</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>320.00</vBC><pPIS>1.65</pPIS><vPIS>5.28</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>320.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>24.32</vCOFINS></COFINSAliq></COFINS></imposto></det>
+</infNFe></NFe></nfeProc>

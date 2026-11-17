@@ -1,0 +1,56 @@
+name: Atualizar e publicar
+
+on:
+  schedule:
+    - cron: "0 9 2 * *"   # dia 2 de cada mes, 06:00 em Brasilia
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  montar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Base oficial da Calculadora de Tributos (Receita)
+        run: |
+          git clone --depth 1 https://github.com/ReceitaFederal/calculadora-rtc-regime-regular.git /tmp/rtc
+          cd /tmp/rtc && mkdir -p calculadora/db
+          ./mvnw -q flyway:migrate -Dflyway.configFiles=./flyway/flyway-pro.conf --batch-mode --errors
+      - name: Baixar NCM, extrair regras e montar
+        run: python scripts/build.py --ncm --rtc /tmp/rtc/calculadora/db/calculadora-pro.db
+      - name: Guardar os dados novos no repositorio
+        run: |
+          git config user.name "atualizacao-mensal"
+          git config user.email "atualizacao-mensal@users.noreply.github.com"
+          git add dados/
+          git diff --cached --quiet || (git commit -m "chore: atualiza dados (tabela NCM e base da Receita)" && git push)
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    needs: montar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

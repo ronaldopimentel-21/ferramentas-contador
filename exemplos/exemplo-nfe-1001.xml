@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><NFe><infNFe Id="NFe-EXEMPLO-1001" versao="4.00">
+<ide><cUF>35</cUF><natOp>VENDA (EXEMPLO FICTICIO)</natOp><mod>55</mod><serie>1</serie><nNF>1001</nNF><dhEmi>2026-11-10T10:00:00-03:00</dhEmi><tpNF>1</tpNF><cMunFG>3550308</cMunFG></ide>
+<emit><CNPJ>00000000000000</CNPJ><xNome>EMPRESA EXEMPLO LTDA (FICTICIA)</xNome><enderEmit><UF>SP</UF></enderEmit></emit>
+<det nItem="1"><prod><cProd>EX100101</cProd><xProd>ARROZ BRANCO TIPO 1 5KG</xProd><NCM>10063021</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>2500.00</vProd><vFrete>12.00</vFrete></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>2512.00</vBC><pICMS>7.00</pICMS><vICMS>175.84</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>2512.00</vBC><pPIS>1.65</pPIS><vPIS>41.45</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>2512.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>190.91</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="2"><prod><cProd>EX100102</cProd><xProd>LEITE UHT INTEGRAL 1L</xProd><NCM>04012010</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>1800.00</vProd><vFrete>12.00</vFrete></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>1812.00</vBC><pICMS>7.00</pICMS><vICMS>126.84</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>1812.00</vBC><pPIS>1.65</pPIS><vPIS>29.90</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>1812.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>137.71</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="3"><prod><cProd>EX100103</cProd><xProd>SABONETE BARRA 90G</xProd><NCM>34011190</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>600.00</vProd><vFrete>12.00</vFrete></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>612.00</vBC><pICMS>18.00</pICMS><vICMS>110.16</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>612.00</vBC><pPIS>1.65</pPIS><vPIS>10.10</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>612.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>46.51</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="4"><prod><cProd>EX100104</cProd><xProd>CERVEJA LATA 350ML</xProd><NCM>22030000</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>1200.00</vProd><vFrete>12.00</vFrete></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>1212.00</vBC><pICMS>25.00</pICMS><vICMS>303.00</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>1212.00</vBC><pPIS>1.65</pPIS><vPIS>20.00</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>1212.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>92.11</vCOFINS></COFINSAliq></COFINS></imposto></det>
+<det nItem="5"><prod><cProd>EX100105</cProd><xProd>PARAFUSO SEXTAVADO ZINCADO</xProd><NCM>73181500</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1</qCom><vProd>350.00</vProd><vFrete>12.00</vFrete></prod>
+<imposto><ICMS><ICMS00><orig>0</orig><CST>00</CST><vBC>362.00</vBC><pICMS>18.00</pICMS><vICMS>65.16</vICMS></ICMS00></ICMS>
+<PIS><PISAliq><CST>01</CST><vBC>362.00</vBC><pPIS>1.65</pPIS><vPIS>5.97</vPIS></PISAliq></PIS>
+<COFINS><COFINSAliq><CST>01</CST><vBC>362.00</vBC><pCOFINS>7.60</pCOFINS><vCOFINS>27.51</vCOFINS></COFINSAliq></COFINS></imposto></det>
+</infNFe></NFe></nfeProc>

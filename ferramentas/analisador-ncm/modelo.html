@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analisador de NCM — protótipo</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#faf8f3;color:#1b1b2f;font:15px/1.45 "Segoe UI",system-ui,sans-serif}
+header{background:#14213d;color:#fff;padding:18px 28px}
+header h1{margin:0;font-size:21px} header p{margin:4px 0 0;color:#cfd6e6;font-size:13px}
+main{max-width:1250px;margin:0 auto;padding:20px 28px}
+.drop{border:2px dashed #b88a1b;background:#fff;border-radius:10px;padding:26px;text-align:center;cursor:pointer}
+.drop.over{background:#fdf3d8}
+.drop b{font-size:17px}
+.muted{color:#666;font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+.card{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:8px 14px;min-width:120px;cursor:pointer}
+.card.on{outline:2px solid #14213d}
+.card b{display:block;font-size:22px}
+input[type=search]{padding:8px 10px;border:1px solid #bbb;border-radius:6px;min-width:260px;font-size:14px}
+button{background:#14213d;color:#fff;border:0;border-radius:6px;padding:9px 14px;font-size:14px;cursor:pointer}
+button.sec{background:#fff;color:#14213d;border:1px solid #14213d}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ded0}
+th{background:#14213d;color:#fff;text-align:left;padding:8px;font-size:13px;position:sticky;top:0}
+td{padding:7px 8px;border-top:1px solid #eee;vertical-align:top;font-size:13.5px}
+td.n{font-family:Consolas,monospace;white-space:nowrap}
+.tag{display:inline-block;padding:2px 9px;border-radius:5px;color:#fff;font-weight:600;font-size:12px;white-space:nowrap}
+.tag.OK{background:#2e7d4f}.tag.ERRO{background:#c0392b}.tag.AMARELO{background:#d99a12}
+tr.ERRO td:first-child,tr.ERRO td.n{background:#fbe9e7}
+tr.AMARELO td.n{background:#fff4d6}
+.wrap{max-height:62vh;overflow:auto;border-radius:8px}
+.oficial{color:#444}
+.busca{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:12px;margin-top:18px}
+.busca li{margin:3px 0;font-size:13.5px}
+.guia{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px}.guia summary{cursor:pointer;font-weight:700;color:#14213d}.guia li{margin:6px 0}.rodape{margin-top:22px;padding-top:12px;border-top:1px solid #ddd;font-size:12.5px;color:#444}.rf{font-size:12.5px;color:#555}.rf.tem{color:#14213d;font-weight:600}.aviso{font-size:12.5px;color:#555;margin-top:14px}
+</style></head><body>
+<header><h1>Analisador de NCM <small style="font-weight:400">· protótipo</small></h1>
+<p>Roda no navegador, sem servidor. O CSV não sai do seu computador. Tabela oficial embutida: <span id="vig"></span>. Reforma: base <span id="rtcv"></span> da Calculadora de Tributos da Receita.</p></header>
+<main>
+<details class="guia" open><summary>Orientação ao contador — como usar</summary>
+<ol>
+<li><b>Prepare o CSV</b> com os produtos do cliente: uma linha por produto, colunas <b>código</b>, <b>descrição</b> e <b>NCM</b> (cabeçalho na primeira linha; separador ponto e vírgula ou vírgula; pode abrir no Excel e salvar como "CSV"). Colunas extras são ignoradas.</li>
+<li><b>Solte o CSV</b> na caixa tracejada abaixo (ou clique para escolher). Nada é enviado pela internet: a conferência acontece neste computador.</li>
+<li><b>Leia o resultado.</b> Clique nos quadros (Todos, OK, Conferir, Inválidos) para filtrar. <b>Inválido</b> (vermelho): NCM em branco, zerado, sem 8 dígitos, inexistente na tabela ou extinto — corrigir no cadastro. <b>Conferir</b> (amarelo): o NCM existe, mas nenhuma palavra do produto aparece na descrição oficial; pode ser só abreviação do cadastro ou NCM de outro produto — olhe a coluna "Descrição oficial". <b>OK</b> (verde): existe, tem 8 dígitos, está vigente e a descrição tem relação com o produto.</li>
+<li><b>Exporte</b> em "Exportar Excel" (respeita o filtro aplicado). O Excel pode avisar sobre o formato do arquivo; é normal, confirme a abertura.</li>
+<li><b>Coluna Reforma</b>: mostra, para cada NCM válido, o cClassTrib com redução de IBS/CBS previsto nos anexos da LC 214/2025 e se o produto entra no Imposto Seletivo (a partir de 2027). Os dados vêm da base oficial da Calculadora de Tributos publicada pela Receita no GitHub (licença MIT). Quando aparece "ou", o NCM cabe em mais de uma classificação e a escolha depende da operação (destinatário, finalidade); passe o mouse para ver a descrição. "Alíquota padrão" significa que não há redução ligada só ao NCM; outras reduções podem depender do serviço ou do tipo de operação.</li>
+<li><b>Busca por palavra</b> (no fim da página): digite o nome do produto para ver NCMs candidatos e as descrições oficiais.</li>
+</ol>
+<p><b>Limites:</b> "OK" não é classificação correta — só indica que o código é válido e coerente com o texto. Descrição parecida não é classificação; valem as Regras Gerais de Interpretação, e <b>quem classifica é o contador</b>. A tabela embutida é uma cópia datada (veja o cabeçalho); a NCM muda por ato do Gecex, então atualize todo mês: baixe o JSON no Classif do Portal Único Siscomex (portalunico.siscomex.gov.br/classif) e use "Trocar tabela NCM…". Para treinar, use o arquivo <b>analisador-ncm-exemplo.csv</b>, que traz um caso de cada situação.</p>
+</details>
+<div class="drop" id="drop"><b>Solte aqui o CSV de produtos</b><br>
+<span class="muted">colunas: código, descrição e NCM (separador ; ou , — cabeçalho opcional). Ou clique para escolher.</span>
+<input type="file" id="arq" accept=".csv,.txt" hidden></div>
+<div class="bar" id="resumo" hidden></div>
+<div class="bar" id="ferr" hidden>
+<input type="search" id="filtro" placeholder="Filtrar a lista (código, produto, NCM)">
+<button id="xls">Exportar Excel</button>
+<button class="sec" id="trocar" title="Usar outra tabela oficial em JSON (Siscomex ou BrasilAPI)">Trocar tabela NCM…</button>
+<input type="file" id="tab" accept=".json" hidden>
+</div>
+<div class="wrap" id="wrap" hidden><table><thead><tr><th>Código</th><th>Produto (cliente)</th><th>NCM informado</th><th>Status</th><th>Motivo</th><th>Descrição oficial</th><th>Reforma: IBS/CBS (cClassTrib)</th></tr></thead><tbody id="corpo"></tbody></table></div>
+<div class="busca"><b>Busca de NCM por palavra</b><br>
+<input type="search" id="q" placeholder="ex.: dobradiça, perfil de alumínio, parafuso" style="margin-top:6px;width:min(480px,100%)">
+<ul id="achados"></ul></div>
+<p class="aviso">A ferramenta aponta; quem classifica é o contador. Descrição parecida não é classificação (valem as Regras Gerais de Interpretação). "Conferir" = o NCM existe, mas nenhuma palavra do produto aparece na descrição oficial — pode ser só abreviação. Atualize a tabela todo mês.</p>
+<footer class="rodape"><b>Tabela NCM embutida nesta versão: atualizada em __DATA_NCM__.</b> A NCM muda por ato do Gecex. A versão atualizada todo mês fica sempre em <b>ferramentas.seldonsystems.com.br</b>; se preferir, troque a tabela você mesmo (JSON do Classif, portalunico.siscomex.gov.br/classif) em "Trocar tabela NCM…".<br>
+Coluna Reforma: dados da Calculadora de Tributos da Receita Federal (github.com/ReceitaFederal, licença MIT), conferidos contra o motor oficial; a decisão de classificação continua sendo do contador.<br>Ferramenta gratuita, atualizada todo mês em ferramentas.seldonsystems.com.br. Dúvidas, erros ou sugestões: <b>SeldonSystems Gestão</b> · (11) 93757-9365 (WhatsApp). Seu retorno ajuda a melhorar a ferramenta.</footer>
+</main>
+<script>
+let TAB=__TABELA__; // [codigo, descricao, inicio, fim]
+const RTC=__REFORMA__; // regras oficiais da Calculadora RTC (Receita)
+let MAPA, LISTA=[], FILTRO='TODOS', LINHAS=[];
+const $=id=>document.getElementById(id);
+const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const limpa=d=>d.replace(/^[-\s]+/,'').trim();
+function montar(){
+  MAPA=new Map();
+  for(const [c,d,i,f] of TAB){MAPA.set(c.replace(/\./g,''),{c,d:limpa(d),i,f});}
+  const fins=TAB.map(t=>t[3]).filter(x=>x<'9999'); 
+  $('vig').textContent=TAB.length.toLocaleString('pt-BR')+' linhas, '+[...MAPA.keys()].filter(k=>k.length==8).length.toLocaleString('pt-BR')+' NCMs de 8 dígitos';
+}
+function cadeia(k){ // descrições dos níveis acima (2,4,5,6,7)
+  const o=[]; for(const n of [2,4,5,6,7]){const e=MAPA.get(k.slice(0,n)); if(e&&k.length>n)o.push(e.d);} return o;
+}
+const STOP=new Set('de da do das dos para com sem em e ou a o as os um uma por sob tipo cor mm cm kg ml un pc pcs und cx c s/'.split(' '));
+function toks(s){return norm(s).split(/[^a-z0-9]+/).filter(t=>t.length>=4&&!STOP.has(t)&&!/^\d+$/.test(t)).map(t=>t.replace(/(es|s)$/,''));}
+function analisar(l){
+  const cru=(l.ncm||'').trim(), k=cru.replace(/\D/g,'');
+  if(!k) return {s:'ERRO',m:'NCM em branco'};
+  if(k.length!==8) return {s:'ERRO',m:'Formato: '+k.length+' dígitos (esperado 8)'};
+  if(/^0+$/.test(k)) return {s:'ERRO',m:'NCM zerado (serviço/sem classificação?)'};
+  const e=MAPA.get(k);
+  if(!e) return {s:'ERRO',m:'Não existe na tabela oficial'};
+  const hoje=new Date().toISOString().slice(0,10);
+  const full=cadeia(k).concat(e.d), of=cadeia(k).slice(-2).concat(e.d).map(x=>x.replace(/:$/,'')).join(' › ');
+  if(e.f&&e.f<hoje) return {s:'ERRO',m:'Extinto em '+e.f.split('-').reverse().join('/'),of};
+  const t1=new Set(toks(l.desc)), t2=new Set(toks(full.join(' ')));
+  let hit=0; for(const t of t1) for(const u of t2) if(t===u||(t.length>5&&u.startsWith(t.slice(0,5)))){hit++;break;}
+  if(t1.size&&hit===0) return {s:'AMARELO',m:'Descrição do produto não combina com a oficial',of};
+  return {s:'OK',m:'',of};
+}
+function reforma(k){ // mesma regra do motor oficial: aceita se cobre o NCM e não cai só em exceção
+  const por={};
+  for(const r of RTC.regras){ if(!k.startsWith(r.p))continue;
+    const g=por[(r.is?'IS:':'')+r.c]=por[(r.is?'IS:':'')+r.c]||{A:false,E:false,S:false,r};
+    g.A=true; if(r.x&&r.x.some(x=>k.startsWith(x)))g.E=true; if(!r.x)g.S=true; }
+  const ok=Object.values(por).filter(g=>g.A&&!(g.E&&!g.S)).map(g=>g.r);
+  const red=ok.filter(r=>!r.is).map(r=>{const c=RTC.cclasstrib[r.c]||{},p=c.red||{};
+    const pr=p.cbs===p.ibs?`redução ${p.cbs}%`:`redução CBS ${p.cbs}% / IBS ${p.ibs}%`;
+    return {cod:r.c,txt:`${r.c} · ${pr}${r.a?' ('+r.a+')':''}`,d:c.d||''};});
+  const uniq=[...new Map(red.map(x=>[x.cod,x])).values()];
+  const is=ok.some(r=>r.is);
+  let t=uniq.length?uniq.map(x=>x.txt).join(' ou '):'Alíquota padrão (sem redução por NCM)';
+  if(is)t+=' · Imposto Seletivo a partir de 2027';
+  return {t,tip:uniq.map(x=>x.cod+': '+x.d).join('\n'),red:uniq.length>0,is};
+}
+function csv(txt){
+  const sep=(txt.split('\n')[0].match(/;/g)||[]).length>=(txt.split('\n')[0].match(/,/g)||[]).length?';':',';
+  const rows=[];let r=[],f='',q=false;
+  for(let i=0;i<txt.length;i++){const ch=txt[i];
+    if(q){if(ch=='"'){if(txt[i+1]=='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch=='"')q=true; else if(ch==sep){r.push(f);f=''}
+    else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&txt[i+1]=='\n')i++;r.push(f);f='';if(r.some(x=>x.trim()))rows.push(r);r=[]}
+    else f+=ch}
+  if(f||r.length){r.push(f);rows.push(r)}
+  return rows;
+}
+function comRef(l){const k=(l.ncm||'').replace(/\D/g,''); l.rf=(l.s!=='ERRO'&&k.length===8)?reforma(k):null; return l;}
+function carregarCSV(txt){
+  const rows=csv(txt.replace(/^\uFEFF/,'')); if(!rows.length)return;
+  const h=rows[0].map(norm); let ic=0,id=1,inn=2, dados=rows;
+  const achou=h.some(x=>/ncm|desc|cod/.test(x));
+  if(achou){dados=rows.slice(1);
+    const f=re=>h.findIndex(x=>re.test(x));
+    ic=f(/^cod|^cprod|^sku|^ref/); id=f(/desc|produto|xprod|nome/); inn=f(/ncm/);
+    if(ic<0)ic=0; if(id<0)id=1; if(inn<0)inn=2;
+  }
+  LINHAS=dados.map(r=>{const l={cod:(r[ic]||'').trim(),desc:(r[id]||'').trim(),ncm:(r[inn]||'').trim()};return comRef(Object.assign(l,analisar(l)))});
+  render();
+}
+function render(){
+  const cont={TODOS:LINHAS.length,OK:0,AMARELO:0,ERRO:0}; LINHAS.forEach(l=>cont[l.s]++);
+  const nomes={TODOS:'Todos',OK:'OK',AMARELO:'Conferir',ERRO:'Inválidos'};
+  $('resumo').hidden=$('ferr').hidden=$('wrap').hidden=false;
+  $('resumo').innerHTML=Object.keys(nomes).map(k=>`<div class="card ${FILTRO==k?'on':''}" data-f="${k}"><b>${cont[k].toLocaleString('pt-BR')}</b>${nomes[k]}</div>`).join('');
+  $('resumo').querySelectorAll('.card').forEach(c=>c.onclick=()=>{FILTRO=c.dataset.f;render()});
+  const q=norm($('filtro').value);
+  LISTA=LINHAS.filter(l=>(FILTRO=='TODOS'||l.s==FILTRO)&&(!q||norm(l.cod+' '+l.desc+' '+l.ncm).includes(q)));
+  const rot={OK:'OK',AMARELO:'Conferir',ERRO:'Inválido'};
+  const esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  $('corpo').innerHTML=LISTA.slice(0,1500).map(l=>`<tr class="${l.s}"><td>${esc(l.cod)}</td><td>${esc(l.desc)}</td><td class="n">${esc(l.ncm)}</td><td><span class="tag ${l.s}">${rot[l.s]}</span></td><td>${esc(l.m)}</td><td class="oficial">${esc(l.of||'')}</td><td class="rf ${l.rf&&(l.rf.red||l.rf.is)?'tem':''}" title="${esc(l.rf?l.rf.tip:'')}">${esc(l.rf?l.rf.t:'')}</td></tr>`).join('')
+   +(LISTA.length>1500?`<tr><td colspan="7" class="muted">Mostrando 1.500 de ${LISTA.length.toLocaleString('pt-BR')}. Use o filtro ou exporte para ver tudo.</td></tr>`:'');
+}
+function exportar(){
+  const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const cor={OK:'#c8e6c9',AMARELO:'#fff3c4',ERRO:'#f8c9c4'}, rot={OK:'OK',AMARELO:'Conferir',ERRO:'Inválido'};
+  let h='<html><head><meta charset="utf-8"></head><body><table border="1"><tr><th>Código</th><th>Produto</th><th>NCM</th><th>Status</th><th>Motivo</th><th>Descrição oficial</th><th>Reforma: IBS/CBS (cClassTrib)</th></tr>';
+  for(const l of LISTA)h+=`<tr><td style="mso-number-format:'\\@'">${esc(l.cod)}</td><td>${esc(l.desc)}</td><td style="mso-number-format:'\\@'">${esc(l.ncm)}</td><td style="background:${cor[l.s]}">${rot[l.s]}</td><td>${esc(l.m)}</td><td>${esc(l.of)}</td><td>${esc(l.rf?l.rf.t:'')}</td></tr>`;
+  h+='</table></body></html>';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+h],{type:'application/vnd.ms-excel'}));
+  a.download='resultado-ncm.xls';a.click();
+}
+function ler(file,cb,enc){const r=new FileReader();r.onload=()=>cb(r.result);r.readAsText(file,enc||'utf-8')}
+function lerCSVArquivo(f){ler(f,t=>{ if(t.includes('\uFFFD')) ler(f,carregarCSV,'windows-1252'); else carregarCSV(t)})}
+const drop=$('drop');
+drop.onclick=()=>$('arq').click();
+$('arq').onchange=e=>e.target.files[0]&&lerCSVArquivo(e.target.files[0]);
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');e.dataTransfer.files[0]&&lerCSVArquivo(e.dataTransfer.files[0])};
+$('filtro').oninput=render; $('xls').onclick=exportar;
+$('trocar').onclick=()=>$('tab').click();
+$('tab').onchange=e=>ler(e.target.files[0],t=>{
+  const j=JSON.parse(t), arr=Array.isArray(j)?j:(j.Nomenclaturas||j.nomenclaturas||[]);
+  const dt=s=>/^\d\d\/\d\d\/\d{4}$/.test(s||'')?s.split('/').reverse().join('-'):(s||'9999-12-31');
+  TAB=arr.map(x=>[x.codigo||x.Codigo,x.descricao||x.Descricao,dt(x.data_inicio||x.Data_Inicio),dt(x.data_fim||x.Data_Fim)]);
+  montar(); LINHAS=LINHAS.map(l=>comRef(Object.assign(l,analisar(l)))); if(LINHAS.length)render();
+});
+$('q').oninput=()=>{
+  const ts=norm($('q').value).split(/\s+/).filter(Boolean); const ul=$('achados');
+  if(!ts.length){ul.innerHTML='';return}
+  const r=[];for(const [k,e] of MAPA){if(k.length<8)continue;const txt=norm(cadeia(k).concat(e.d).join(' '));if(ts.every(t=>txt.includes(t))){r.push([e.c,cadeia(k).slice(-1).concat(e.d).join(' › ')]);if(r.length>=40)break}}
+  ul.innerHTML=r.map(x=>`<li><code>${x[0]}</code> ${x[1].replace(/</g,'&lt;')}</li>`).join('')||'<li class="muted">nada encontrado</li>';
+};
+montar();
+$('rtcv').textContent=RTC.versao+' de '+RTC.data_versao.split('-').reverse().join('/');
+</script></body></html>

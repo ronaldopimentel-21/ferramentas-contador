@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de impacto da Reforma por produto — protótipo</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:#faf8f3;color:#1b1b2f;font:15px/1.45 "Segoe UI",system-ui,sans-serif}
+header{background:#14213d;color:#fff;padding:18px 28px}
+header h1{margin:0;font-size:21px} header p{margin:4px 0 0;color:#cfd6e6;font-size:13px}
+main{max-width:1400px;margin:0 auto;padding:20px 28px}
+.guia{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px}
+.guia summary{cursor:pointer;font-weight:700;color:#14213d}.guia li{margin:6px 0}
+.drop{border:2px dashed #b88a1b;background:#fff;border-radius:10px;padding:24px;text-align:center;cursor:pointer}
+.drop.over{background:#fdf3d8}.drop b{font-size:17px}
+.muted{color:#666;font-size:13px}
+.painel{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:12px 16px;margin:16px 0}
+.painel label{font-size:12.5px;color:#444;display:flex;flex-direction:column;gap:3px}
+.painel input[type=number]{width:86px;padding:6px;border:1px solid #bbb;border-radius:5px;font-size:14px}
+.painel select{padding:6px;border:1px solid #bbb;border-radius:5px;font-size:14px}
+.painel .chk{flex-direction:row;align-items:center;gap:6px;max-width:330px}
+.cards{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.card{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:8px 14px;min-width:170px}
+.card b{display:block;font-size:20px}.card.sobe b{color:#b03a2e}.card.desce b{color:#2e7d4f}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+input[type=search]{padding:8px 10px;border:1px solid #bbb;border-radius:6px;min-width:260px;font-size:14px}
+button{background:#14213d;color:#fff;border:0;border-radius:6px;padding:9px 14px;font-size:14px;cursor:pointer}
+button.sec{background:#fff;color:#14213d;border:1px solid #14213d}
+.wrap{max-height:60vh;overflow:auto;border-radius:8px}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ded0}
+th{background:#14213d;color:#fff;text-align:left;padding:7px;font-size:12.5px;position:sticky;top:0;z-index:1}
+td{padding:6px 7px;border-top:1px solid #eee;vertical-align:top;font-size:13px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.c{font-family:Consolas,monospace;white-space:nowrap}
+td select{max-width:250px;font-size:12px}
+.pos{color:#b03a2e;font-weight:600}.neg{color:#2e7d4f;font-weight:600}
+.flag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;background:#fff4d6;color:#7a5600;margin-left:4px}
+.flag.is{background:#fbe9e7;color:#8e2a1e}
+.aviso{font-size:12.5px;color:#555;margin-top:14px}
+.rodape{margin-top:22px;padding-top:12px;border-top:1px solid #ddd;font-size:12.5px;color:#444}
+</style></head><body>
+<header><h1>Simulador de impacto da Reforma por produto <small style="font-weight:400">· protótipo</small></h1>
+<p>Roda no navegador, sem servidor. Os XMLs não saem do seu computador. Regras de redução: base <span id="rtcv"></span> da Calculadora de Tributos da Receita.</p></header>
+<main>
+<details class="guia" open><summary>Orientação ao contador — como usar</summary>
+<ol>
+<li><b>Solte os XMLs de NF-e ou NFC-e</b> (um ou vários de uma vez) na caixa abaixo. Nada é enviado pela internet.</li>
+<li><b>Escolha o cenário</b>: 2026 (fase de teste, alíquotas oficiais 0,9% CBS e 0,1% IBS), 2027–2028 (CBS cheia, PIS e Cofins extintos) ou regime pleno (2033, ICMS e ISS extintos). As alíquotas podem ser editadas.</li>
+<li><b>Leia cada item</b>: a base de cálculo segue a regra oficial da base unificada para o ano escolhido; a redução vem do NCM pelos anexos da LC 214/2025. Quando o NCM cabe em mais de um enquadramento, aparece "Conferir" e você escolhe o cClassTrib na lista. Enquadramentos que dependem de quem compra (administração pública, produtor rural) nunca são escolhidos sozinhos.</li>
+<li><b>Compare</b>: "Carga atual" soma ICMS, FCP, PIS, Cofins e ISS destacados no item; "Carga no cenário" soma CBS + IBS com os tributos antigos que ainda existem no ano (em 2026 todos continuam e a CBS/IBS de teste é compensada; em 2027–2028 continuam ICMS e ISS; em 2033 nenhum). A diferença mostra se o produto fica mais caro ou mais barato em imposto.</li>
+<li><b>Exporte</b> em "Exportar Excel" para montar o relatório ao cliente.</li>
+</ol>
+<p><b>Limites:</b> é a carga destacada no documento, item a item; não considera créditos na cadeia, regimes específicos, Simples Nacional, Zona Franca nem o Imposto Seletivo (marcado, não calculado, porque as alíquotas não estão fixadas). As alíquotas de 2027 em diante são estimativas editáveis: a soma legal de referência é 26,5% e a estimativa do Comitê Gestor de julho/2026 foi de 27,91%. A ferramenta simula; a orientação ao cliente é do contador.</p>
+</details>
+<div class="drop" id="drop"><b>Solte aqui os XMLs de NF-e</b><br><span class="muted">vários arquivos de uma vez. Ou clique para escolher.</span>
+<input type="file" id="arq" accept=".xml" multiple hidden></div>
+<div class="painel">
+<label>Cenário<select id="cen">
+<option value="2026">2026 — fase de teste</option>
+<option value="2027">2027–2028 — CBS cheia</option>
+<option value="2033" selected>2033 — regime pleno</option></select></label>
+<label>CBS %<input type="number" step="0.01" id="aCbs"></label>
+<label>IBS estadual %<input type="number" step="0.01" id="aUf"></label>
+<label>IBS municipal %<input type="number" step="0.01" id="aMun"></label>
+<label class="chk"><input type="checkbox" id="semExt" checked> Tirar da base os tributos que deixam de existir no cenário (o preço da nota já vem sem eles)</label>
+</div>
+<div class="cards" id="cards" hidden></div>
+<div class="bar" id="ferr" hidden>
+<input type="search" id="filtro" placeholder="Filtrar (produto, NCM, nota)">
+<label class="muted"><input type="checkbox" id="soConf"> só itens para conferir</label>
+<button id="xls">Exportar Excel</button>
+<button class="sec" id="limpar">Limpar</button>
+</div>
+<div class="wrap" id="wrap" hidden><table><thead><tr>
+<th>Nota</th><th>Produto</th><th>NCM</th><th>cClassTrib (redução)</th><th>Valor do item</th><th>Base IBS/CBS</th><th>Alíq. efetiva</th><th>CBS</th><th>IBS</th><th>Tributos antigos que ficam</th><th>Carga no cenário</th><th>Carga atual</th><th>Diferença</th>
+</tr></thead><tbody id="corpo"></tbody></table></div>
+<p class="aviso">Regra da base (por ano): soma valor do produto, frete, seguro, outras despesas e II; subtrai desconto, PIS e Cofins (só 2026) e ICMS, FCP e ISS (até 2032), como na base unificada da Calculadora oficial. Alíquota efetiva = alíquota × (1 − redução).</p>
+<footer class="rodape">Regras de redução por NCM: Calculadora de Tributos da Receita Federal (github.com/ReceitaFederal/calculadora-rtc-regime-regular, licença MIT), conferidas contra o motor oficial.<br>
+Ferramenta gratuita, atualizada todo mês em ferramentas.seldonsystems.com.br. Dúvidas, erros ou sugestões: <b>SeldonSystems Gestão</b> · (11) 93757-9365 (WhatsApp).</footer>
+</main>
+<script>
+const RTC=__REFORMA__;
+const PRESET={'2026':[0.9,0.1,0],'2027':[8.8,0.05,0.05],'2033':[8.8,8.85,8.85]};
+let ITENS=[];
+const $=id=>document.getElementById(id);
+const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const fmt=v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2=v=>Math.round((v+Number.EPSILON)*100)/100;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// mesma regra do motor oficial (NcmAplicavelService.criticar)
+function candidatos(k){
+  const por={};
+  for(const r of RTC.regras){ if(!k.startsWith(r.p))continue;
+    const key=(r.is?'IS:':'')+r.c, g=por[key]=por[key]||{A:false,E:false,S:false,r};
+    g.A=true; if(r.x&&r.x.some(x=>k.startsWith(x)))g.E=true; if(!r.x)g.S=true; }
+  const ok=Object.values(por).filter(g=>g.A&&!(g.E&&!g.S)).map(g=>g.r);
+  const red=[...new Map(ok.filter(r=>!r.is).map(r=>[r.c,r])).values()].map(r=>{
+    const c=RTC.cclasstrib[r.c]||{},p=c.red||{};return {c:r.c,cbs:p.cbs||0,ibs:p.ibs||0,mun:p.ibsMun??p.ibs??0,a:r.a,d:c.d||''};});
+  red.sort((a,b)=>b.cbs-a.cbs);
+  return {red,is:ok.some(r=>r.is)};
+}
+// enquadramentos que dependem de quem compra: nunca viram padrão sozinhos
+const CONDICIONAL=new Set(['200005','200038','515001','200043']);
+const PADRAO={c:'000001',cbs:0,ibs:0,mun:0,a:'',d:'Tributação integral (sem redução)'};
+
+function txt(el,tag){const e=el.getElementsByTagName(tag)[0];return e?e.textContent.trim():''}
+function num(el,tag){let s=0;for(const e of el.getElementsByTagName(tag))s+=parseFloat(e.textContent)||0;return s}
+function lerXML(nome,texto){
+  const d=new DOMParser().parseFromString(texto,'application/xml');
+  const inf=d.getElementsByTagName('infNFe')[0]; if(!inf)return [];
+  const ide=inf.getElementsByTagName('ide')[0], emit=inf.getElementsByTagName('emit')[0];
+  const nota=`${txt(ide,'mod')=='65'?'NFC-e':'NF-e'} ${txt(ide,'nNF')}`, tpNF=txt(ide,'tpNF')=='0'?'Entrada':'Saída';
+  const mod=parseInt(txt(ide,'mod'))||55, emis=txt(emit,'xNome'), data=(txt(ide,'dhEmi')||txt(ide,'dEmi')).slice(0,10);
+  const out=[];
+  for(const det of inf.getElementsByTagName('det')){
+    const p=det.getElementsByTagName('prod')[0], imp=det.getElementsByTagName('imposto')[0]||det;
+    const icms=imp.getElementsByTagName('ICMS')[0], uf=imp.getElementsByTagName('ICMSUFDest')[0];
+    const pis=imp.getElementsByTagName('PIS')[0], cof=imp.getElementsByTagName('COFINS')[0], iss=imp.getElementsByTagName('ISSQN')[0], ii=imp.getElementsByTagName('II')[0];
+    const ncm=txt(p,'NCM').replace(/\D/g,'');
+    const it={arq:nome,nota,tpNF,mod,emis,data,n:det.getAttribute('nItem'),cod:txt(p,'cProd'),prod:txt(p,'xProd'),ncm,cfop:txt(p,'CFOP'),
+      vProd:num(p,'vProd'),vFrete:num(p,'vFrete'),vSeg:num(p,'vSeg'),vOutro:num(p,'vOutro'),vDesc:num(p,'vDesc'),
+      vII:ii?num(ii,'vII'):0,vICMS:icms?num(icms,'vICMS'):0,vFCP:icms?num(icms,'vFCP'):0,vICMSMono:icms?num(icms,'vICMSMono'):0,
+      vICMSUFDest:uf?num(uf,'vICMSUFDest'):0,vFCPUFDest:uf?num(uf,'vFCPUFDest'):0,
+      vPIS:pis?num(pis,'vPIS'):0,vCOFINS:cof?num(cof,'vCOFINS'):0,vISSQN:iss?num(iss,'vISSQN'):0,servico:!!iss};
+    const cc=ncm.length===8?candidatos(ncm):{red:[],is:false};
+    it.cands=cc.red; it.is=cc.is; it.sel=cc.red.find(c=>!CONDICIONAL.has(c.c))||PADRAO;
+    it.amb=cc.red.length>1||(cc.red.length===1&&CONDICIONAL.has(cc.red[0].c));
+    out.push(it);
+  }
+  return out;
+}
+// base unificada (ElementoBaseCalculo da Calculadora oficial), tpDoc 55/65
+function base(it,ano,semExt){
+  const bem=!it.servico;
+  let b=it.vProd+it.vFrete+it.vSeg+it.vOutro+(bem&&it.mod===55?it.vII:0)-it.vDesc;
+  const pisCof=it.vPIS+it.vCOFINS, icms=it.vICMS+it.vFCP+it.vICMSMono+(it.mod===55?it.vICMSUFDest+it.vFCPUFDest:0);
+  if(ano===2026)b-=pisCof; else if(semExt)b-=pisCof;            // PIS/Cofins extintos a partir de 2027
+  if(ano<=2032){ if(bem)b-=icms; else b-=it.vISSQN; }
+  else if(semExt){ b-=bem?icms:it.vISSQN; }                      // ICMS/ISS extintos em 2033
+  return r2(b);
+}
+function calc(){
+  const ano=parseInt($('cen').value), semExt=$('semExt').checked;
+  const aC=+$('aCbs').value||0, aU=+$('aUf').value||0, aM=+$('aMun').value||0;
+  for(const it of ITENS){
+    const s=it.sel, bc=base(it,ano,semExt);
+    const eC=aC*(1-s.cbs/100), eU=aU*(1-s.ibs/100), eM=aM*(1-s.mun/100);
+    it.base=bc; it.ef=eC+eU+eM;
+    it.cbs=r2(bc*eC/100); it.ibs=r2(r2(bc*eU/100)+r2(bc*eM/100));
+    it.nova=r2(it.cbs+it.ibs);
+    const icmsIss=it.vICMS+it.vFCP+it.vICMSMono+it.vICMSUFDest+it.vFCPUFDest+it.vISSQN, pisCof=it.vPIS+it.vCOFINS;
+    it.atual=r2(icmsIss+pisCof);
+    // tributos antigos que continuam no ano do cenário (2026: todos; 2027-2032: ICMS e ISS; 2033: nenhum)
+    it.resto=r2(ano===2026?icmsIss+pisCof:ano<=2032?icmsIss:0);
+    // 2026: CBS/IBS de teste são compensados com PIS/Cofins, não somam carga
+    it.cen=r2(it.resto+(ano===2026?0:it.nova));
+    it.dif=r2(it.cen-it.atual);
+  }
+  render();
+}
+function render(){
+  if(!ITENS.length){$('cards').hidden=$('ferr').hidden=$('wrap').hidden=true;return}
+  $('cards').hidden=$('ferr').hidden=$('wrap').hidden=false;
+  const q=norm($('filtro').value), so=$('soConf').checked;
+  const L=ITENS.filter(it=>(!so||it.amb||it.is||it.ncm.length!==8)&&(!q||norm(it.prod+' '+it.ncm+' '+it.nota+' '+it.emis).includes(q)));
+  const S=k=>r2(L.reduce((a,it)=>a+it[k],0));
+  const tv=S('vProd'),tn=S('cen'),ta=S('atual'),td=r2(tn-ta),tcb=S('nova');
+  $('cards').innerHTML=`<div class="card"><b>${L.length.toLocaleString('pt-BR')}</b>itens de ${new Set(L.map(i=>i.arq)).size} nota(s)</div>
+   <div class="card"><b>R$ ${fmt(tv)}</b>valor dos produtos</div>
+   <div class="card"><b>R$ ${fmt(ta)}</b>carga atual (ICMS, PIS, Cofins, ISS)</div>
+   <div class="card"><b>R$ ${fmt(tcb)}</b>CBS + IBS ${$('cen').value==='2026'?'(teste, compensáveis)':''}</div>
+   <div class="card"><b>R$ ${fmt(tn)}</b>carga no cenário</div>
+   <div class="card ${td>0?'sobe':'desce'}"><b>${td>0?'+':''}R$ ${fmt(td)}</b>diferença ${ta?'('+(td>0?'+':'')+fmt(td/ta*100)+'%)':''}</div>
+   <div class="card"><b>${L.filter(i=>i.amb).length}</b>para conferir · ${L.filter(i=>i.is).length} com Imposto Seletivo</div>`;
+  $('corpo').innerHTML=L.slice(0,2000).map(it=>{const i=ITENS.indexOf(it);
+    const opts=(it.cands.length?it.cands:[]).concat([PADRAO]).map(c=>`<option value="${c.c}" ${c.c===it.sel.c?'selected':''} title="${esc(c.d)}">${c.c} · ${c.cbs===c.ibs?c.cbs+'%':'CBS '+c.cbs+'% / IBS '+c.ibs+'%'}${c.a?' · '+esc(c.a):''}</option>`).join('');
+    return `<tr><td>${esc(it.nota)}<div class="muted">${esc(it.tpNF)} · ${esc(it.data.split('-').reverse().join('/'))}</div></td>
+    <td>${esc(it.prod)}${it.amb?'<span class="flag">Conferir</span>':''}${it.is?'<span class="flag is">Imposto Seletivo (não calculado)</span>':''}</td>
+    <td class="c">${esc(it.ncm)}</td><td><select data-i="${i}" title="${esc(it.sel.d)}">${opts}</select></td>
+    <td class="n">${fmt(it.vProd)}</td><td class="n">${fmt(it.base)}</td><td class="n">${fmt(it.ef)}%</td>
+    <td class="n">${fmt(it.cbs)}</td><td class="n">${fmt(it.ibs)}</td><td class="n">${fmt(it.resto)}</td><td class="n">${fmt(it.cen)}</td><td class="n">${fmt(it.atual)}</td>
+    <td class="n ${it.dif>0?'pos':it.dif<0?'neg':''}">${it.dif>0?'+':''}${fmt(it.dif)}</td></tr>`}).join('')
+   +(L.length>2000?`<tr><td colspan="13" class="muted">Mostrando 2.000 de ${L.length}. Use o filtro ou exporte para ver tudo.</td></tr>`:'');
+  $('corpo').querySelectorAll('select').forEach(s=>s.onchange=()=>{const it=ITENS[+s.dataset.i];
+    it.sel=it.cands.find(c=>c.c===s.value)||PADRAO; it.amb=false; calc();});
+}
+function exportar(){
+  const cols=['Arquivo','Nota','Tipo','Data','Emitente','Item','Código','Produto','NCM','CFOP','cClassTrib','Redução CBS %','Redução IBS %','Valor do item','Base IBS/CBS','Alíq. efetiva %','CBS','IBS','Tributos antigos que ficam','Carga no cenário','Carga atual','Diferença','Imposto Seletivo'];
+  let h='<html><head><meta charset="utf-8"></head><body><table border="1"><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  const t=v=>`<td style="mso-number-format:'\\@'">${esc(v)}</td>`, n=v=>`<td>${String(v.toFixed?v.toFixed(2):v).replace('.',',')}</td>`;
+  for(const it of ITENS)h+='<tr>'+t(it.arq)+t(it.nota)+t(it.tpNF)+t(it.data)+t(it.emis)+t(it.n)+t(it.cod)+t(it.prod)+t(it.ncm)+t(it.cfop)+t(it.sel.c)+n(it.sel.cbs)+n(it.sel.ibs)+n(it.vProd)+n(it.base)+n(it.ef)+n(it.cbs)+n(it.ibs)+n(it.resto)+n(it.cen)+n(it.atual)+n(it.dif)+t(it.is?'sim':'')+'</tr>';
+  h+='</table></body></html>';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+h],{type:'application/vnd.ms-excel'}));a.download='impacto-reforma.xls';a.click();
+}
+async function carregar(files){
+  for(const f of files){ if(!/\.xml$/i.test(f.name))continue; ITENS.push(...lerXML(f.name,await f.text())); }
+  calc();
+}
+function preset(){const p=PRESET[$('cen').value];[$('aCbs').value,$('aUf').value,$('aMun').value]=p;calc();}
+const drop=$('drop');
+drop.onclick=()=>$('arq').click();
+$('arq').onchange=e=>carregar([...e.target.files]);
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');carregar([...e.dataTransfer.files])};
+$('cen').onchange=preset; ['aCbs','aUf','aMun','semExt'].forEach(id=>$(id).oninput=calc);
+$('filtro').oninput=render; $('soConf').onchange=render; $('xls').onclick=exportar;
+$('limpar').onclick=()=>{ITENS=[];render();};
+$('rtcv').textContent=RTC.versao+' de '+RTC.data_versao.split('-').reverse().join('/');
+preset();
+</script></body></html>

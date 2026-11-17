@@ -1,0 +1,25 @@
+codigo;descricao;ncm;o_que_deve_acontecer
+EX001;Água mineral gaseificada 500 ml;22021000;OK
+EX002;Parafuso sextavado aço zincado;73181500;OK
+EX003;Camiseta algodão adulto;61091000;OK
+EX004;Computador portátil 15 pol.;84713019;OK
+EX005;Smartphone 128GB;85171300;OK
+EX006;Cimento comum saco 50 kg;25232910;OK
+EX007;Janela de alumínio 1,20 x 1,00;7610.10.00;OK (NCM digitado com pontos é aceito)
+EX008;Camiseta algodão adulto;"6109 10 00";OK (espaços são aceitos)
+EX009;Kit brinde promocional;99999999;Inválido - não existe
+EX010;Peça sem classificar;12345678;Inválido - não existe
+EX011;Serviço de instalação;00000000;Inválido - zerado
+EX012;Mesa de escritório em metal;94032000;Inválido - NCM extinto em 31/08/2022
+EX013;Caixa plástica organizadora;39239000;Inválido - NCM extinto em 31/08/2022
+EX014;Notebook 15 pol.;8471301;Inválido - 7 dígitos
+EX015;Dipirona 500 mg comprimido;3004909;Inválido - 7 dígitos
+EX016;Camiseta algodão;610910001;Inválido - 9 dígitos
+EX017;Produto sem NCM cadastrado;;Inválido - em branco
+EX018;Água mineral gaseificada 500 ml;01012900;Conferir - NCM existe (cavalos), mas é de outro produto
+EX019;Camiseta algodão adulto;94036000;Conferir - NCM existe (móveis de madeira), mas é de outro produto
+EX020;Parafuso sextavado aço zincado;84713019;Conferir - NCM existe (computadores), mas é de outro produto
+EX021;Arroz branco tipo 1 pacote 5 kg;10063021;OK - Reforma: redução 100% (cesta básica, Anexo I) ou outras conforme o uso
+EX022;Sabonete em barra 90 g;34011190;OK - Reforma: redução 60% (higiene pessoal, Anexo VIII)
+EX023;Cerveja lata 350 ml;22030000;OK - Reforma: alíquota padrão + Imposto Seletivo a partir de 2027
+EX024;Leite UHT integral 1 litro;04012010;OK - Reforma: redução 100% (Anexo I)

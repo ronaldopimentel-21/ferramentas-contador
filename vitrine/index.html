@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferramentas grátis para contadores · Reforma Tributária · Seldon</title>
+<meta name="description" content="Analisador de NCM com cClassTrib e simulador de impacto da Reforma por produto. Grátis, sem cadastro, roda no navegador e é atualizado todo mês com a base oficial da Receita.">
+<link rel="icon" href="img/favicon-64.png">
+<style>
+@font-face{font-family:M;src:url(fontes/montserrat-medium.woff) format("woff");font-weight:500}
+@font-face{font-family:M;src:url(fontes/montserrat-bold.woff) format("woff");font-weight:700}
+@font-face{font-family:M;src:url(fontes/montserrat-extrabold.woff) format("woff");font-weight:800}
+:root{color-scheme:light;--azul:#00132C;--ciano:#00B4D8;--link:#00607A;--papel:#f7f8fa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:#14202e;font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+a{color:var(--link)}
+header{background:var(--azul);color:#fff}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+.topo{display:flex;align-items:center;gap:12px;padding:16px 0}
+.topo img{width:36px;height:auto}
+.marca{font-family:M;font-weight:800;letter-spacing:.5px;font-size:19px}
+.marca span{font-weight:500;letter-spacing:4px;font-size:13px;margin-left:6px;color:#9fdcec}
+.hero{padding:34px 0 40px}
+.hero h1{font-family:M;font-weight:800;font-size:34px;line-height:1.15;margin:0 0 12px;max-width:760px}
+.hero p{color:#d6e2ee;max-width:700px;margin:0;font-size:17px}
+.carimbo{display:inline-block;margin-top:22px;border:2px dashed var(--ciano);border-radius:6px;padding:8px 14px;font:600 13px/1.4 Consolas,monospace;color:#bdf1fb;transform:rotate(-1deg)}
+main{padding:34px 0 10px}
+.ferr{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.f{background:#fff;border:1px solid #dfe5ec;border-radius:10px;padding:22px 22px 18px;display:flex;flex-direction:column}
+.f .num{font-family:M;font-weight:800;color:var(--ciano);font-size:14px;letter-spacing:2px}
+.f h2{font-family:M;font-weight:800;font-size:22px;margin:4px 0 8px;color:var(--azul)}
+.f ul{padding-left:18px;margin:6px 0 16px}.f li{margin:4px 0}
+.acoes{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-block;background:var(--ciano);color:var(--azul);font-weight:700;text-decoration:none;border-radius:6px;padding:10px 16px}
+.btn.sec{background:#fff;color:var(--azul);border:1.5px solid var(--azul)}
+.ex{font-size:13.5px;margin-top:10px;color:#4a5a6a}
+.passos{margin:34px 0 0;background:#fff;border:1px solid #dfe5ec;border-radius:10px;padding:20px 22px}
+.passos h2{font-family:M;font-weight:800;font-size:19px;margin:0 0 8px;color:var(--azul)}
+.passos ol{margin:0;padding-left:20px}.passos li{margin:6px 0}
+.limite{margin:22px 0 0;font-size:14px;color:#3d4b5a;border-left:4px solid var(--ciano);padding:4px 0 4px 14px}
+.siga{margin:30px 0;background:var(--azul);color:#fff;border-radius:10px;padding:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.siga b{font-family:M;font-size:19px}.siga p{margin:4px 0 0;color:#d6e2ee}
+footer{font-size:13px;color:#56636f;padding:10px 0 34px}
+@media (max-width:760px){.ferr{grid-template-columns:1fr}.hero h1{font-size:27px}}
+</style></head><body>
+<header><div class="wrap">
+<div class="topo"><img src="img/logo.png" srcset="img/logo@2x.png 2x" alt=""><div class="marca">SELDON<span>FERRAMENTAS</span></div></div>
+<div class="hero">
+<h1>Ferramentas grátis para o contador atravessar a Reforma Tributária.</h1>
+<p>Baixe, abra no navegador e solte o arquivo do cliente. Sem cadastro, sem instalar nada, e os dados não saem do seu computador.</p>
+<div class="carimbo">ATUALIZADO EM __DATA__ · NCM __NCM_QTD__ CÓDIGOS · BASE RECEITA __RTC_VERSAO__</div>
+</div></div></header>
+<main><div class="wrap">
+<div class="ferr">
+<section class="f">
+<div class="num">FERRAMENTA 1</div>
+<h2>Analisador de NCM</h2>
+<p>Solte a planilha de produtos do cliente (código, descrição e NCM) e veja na hora:</p>
+<ul>
+<li>NCM que não existe, extinto, com dígitos errados ou zerado;</li>
+<li>descrição do produto que não combina com a oficial;</li>
+<li>o cClassTrib e a redução de IBS/CBS de cada NCM, e quem entra no Imposto Seletivo.</li>
+</ul>
+<div class="acoes"><a class="btn" href="analisador-ncm.html">Abrir agora</a><a class="btn sec" href="analisador-ncm.html" download>Baixar o arquivo</a></div>
+<p class="ex">Para treinar: <a href="exemplos/analisador-ncm-exemplo.csv" download>planilha de exemplo</a> com um caso de cada situação.</p>
+</section>
+<section class="f">
+<div class="num">FERRAMENTA 2</div>
+<h2>Simulador de impacto por produto</h2>
+<p>Solte os XMLs de NF-e e compare, item a item, a carga de hoje (ICMS, PIS, Cofins, ISS) com a de cada fase da Reforma:</p>
+<ul>
+<li>2026 (teste), 2027–2028 e regime pleno, com alíquotas editáveis;</li>
+<li>redução pelo NCM conforme os anexos da LC 214/2025;</li>
+<li>exporta para Excel, pronto para virar relatório ao cliente.</li>
+</ul>
+<div class="acoes"><a class="btn" href="simulador-impacto.html">Abrir agora</a><a class="btn sec" href="simulador-impacto.html" download>Baixar o arquivo</a></div>
+<p class="ex">Para treinar: notas fictícias <a href="exemplos/exemplo-nfe-1001.xml" download>1001</a> e <a href="exemplos/exemplo-nfe-1002.xml" download>1002</a>.</p>
+</section>
+</div>
+<div class="passos"><h2>Como usar</h2><ol>
+<li>Clique em <b>Abrir agora</b> ou baixe o arquivo para usar sem internet.</li>
+<li>Solte a planilha ou os XMLs do cliente na caixa tracejada.</li>
+<li>Confira o que veio em vermelho e amarelo e exporte para Excel.</li>
+</ol></div>
+<p class="limite">As regras de redução e de base de cálculo vêm da Calculadora de Tributos publicada pela Receita Federal no GitHub (licença MIT) e foram conferidas contra o motor oficial. A tabela NCM vem do Classif do Siscomex. As ferramentas apontam; quem classifica e orienta o cliente é o contador.</p>
+<div class="siga"><div><b>Toda nova ferramenta sai primeiro no Instagram.</b><p>Siga @seldonsystems e conte qual tarefa do escritório você quer ver resolvida na próxima.</p></div>
+<a class="btn" href="https://www.instagram.com/seldonsystems/">Seguir no Instagram</a></div>
+</div></main>
+<footer><div class="wrap">Seldon Gestão e Tecnologia Ltda. · CNPJ 52.909.592/0001-62 · contato@seldonsystems.com.br · (11) 93757-9365 (WhatsApp) · Também fazemos o <a href="https://tali.seldonsystems.com.br/">Seldon Tali</a>, conferência de expedição para a indústria.</div></footer>
+</body></html>
