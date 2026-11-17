@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Analisador de NCM — protótipo</title>
+<title>Analisador de NCM · grátis para contadores</title>
 <style>
 :root{color-scheme:light}
 *{box-sizing:border-box}
@@ -34,7 +34,7 @@ tr.AMARELO td.n{background:#fff4d6}
 .busca li{margin:3px 0;font-size:13.5px}
 .guia{background:#fff;border:1px solid #e3ded0;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px}.guia summary{cursor:pointer;font-weight:700;color:#14213d}.guia li{margin:6px 0}.rodape{margin-top:22px;padding-top:12px;border-top:1px solid #ddd;font-size:12.5px;color:#444}.rf{font-size:12.5px;color:#555}.rf.tem{color:#14213d;font-weight:600}.aviso{font-size:12.5px;color:#555;margin-top:14px}
 </style></head><body>
-<header><h1>Analisador de NCM <small style="font-weight:400">· protótipo</small></h1>
+<header><h1>Analisador de NCM <small style="font-weight:400">· grátis</small></h1>
 <p>Roda no navegador, sem servidor. O CSV não sai do seu computador. Tabela oficial embutida: <span id="vig"></span>. Reforma: base <span id="rtcv"></span> da Calculadora de Tributos da Receita.</p></header>
 <main>
 <details class="guia" open><summary>Orientação ao contador — como usar</summary>
@@ -72,7 +72,7 @@ const RTC=__REFORMA__; // regras oficiais da Calculadora RTC (Receita)
 let MAPA, LISTA=[], FILTRO='TODOS', LINHAS=[];
 const $=id=>document.getElementById(id);
 const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-const limpa=d=>d.replace(/^[-\s]+/,'').trim();
+const limpa=d=>d.replace(/<[^>]+>/g,'').replace(/\s+/g,' ').replace(/^[-\s]+/,'').trim();
 function montar(){
   MAPA=new Map();
   for(const [c,d,i,f] of TAB){MAPA.set(c.replace(/\./g,''),{c,d:limpa(d),i,f});}

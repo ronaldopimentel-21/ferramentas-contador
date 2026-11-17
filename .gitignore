@@ -1,3 +1,5 @@
 _site/
 __pycache__/
 *.pyc
+video/*.mp4
+video/_q/
