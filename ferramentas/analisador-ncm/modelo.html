@@ -161,7 +161,9 @@ function exportar(){
   a.download='resultado-ncm.xls';a.click();
 }
 function ler(file,cb,enc){const r=new FileReader();r.onload=()=>cb(r.result);r.readAsText(file,enc||'utf-8')}
-function lerCSVArquivo(f){ler(f,t=>{ if(t.includes('\uFFFD')) ler(f,carregarCSV,'windows-1252'); else carregarCSV(t)})}
+// Conta só que a ferramenta foi usada (nada do arquivo é enviado); não conta no arquivo baixado.
+function contaUso(){ if(/(^|\.)seldonsystems\.com\.br$/.test(location.hostname)&&navigator.sendBeacon) navigator.sendBeacon('https://ir.seldonsystems.com.br/c/uso-analisador?o=ferramentas-analisador-ncm') }
+function lerCSVArquivo(f){contaUso();ler(f,t=>{ if(t.includes('\uFFFD')) ler(f,carregarCSV,'windows-1252'); else carregarCSV(t)})}
 const drop=$('drop');
 drop.onclick=()=>$('arq').click();
 $('arq').onchange=e=>e.target.files[0]&&lerCSVArquivo(e.target.files[0]);
