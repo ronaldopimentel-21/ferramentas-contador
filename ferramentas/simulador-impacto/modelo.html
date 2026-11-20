@@ -194,7 +194,8 @@ function exportar(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+h],{type:'application/vnd.ms-excel'}));a.download='impacto-reforma.xls';a.click();
 }
 // Conta só que a ferramenta foi usada (nada dos XMLs é enviado); não conta no arquivo baixado.
-function contaUso(){ if(/(^|\.)seldonsystems\.com\.br$/.test(location.hostname)&&navigator.sendBeacon) navigator.sendBeacon('https://ir.seldonsystems.com.br/c/uso-simulador?o=ferramentas-simulador-impacto') }
+try{const q=new URLSearchParams(location.search).get('c');if(q&&/^[a-z0-9-]{1,40}$/.test(q))sessionStorage.setItem('seldon_c',q)}catch(e){}
+function contaUso(){ if(/(^|\.)seldonsystems\.com\.br$/.test(location.hostname)&&navigator.sendBeacon) navigator.sendBeacon('https://ir.seldonsystems.com.br/c/uso-simulador?o=ferramentas-simulador-impacto'+((()=>{try{return sessionStorage.getItem('seldon_c')}catch(e){}})()?'&c='+sessionStorage.getItem('seldon_c'):'')) }
 async function carregar(files){
   contaUso();
   for(const f of files){ if(!/\.xml$/i.test(f.name))continue; ITENS.push(...lerXML(f.name,await f.text())); }
