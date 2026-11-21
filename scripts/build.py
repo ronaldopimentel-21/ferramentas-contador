@@ -9,6 +9,8 @@ Se um dado novo vier estranho (poucos códigos, arquivo vazio), o script para co
 o site no ar continua com a última versão boa.
 """
 import json, os, shutil, subprocess, sys, urllib.request, datetime
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import paginas_ncm  # páginas abertas (tabela cClassTrib e capítulos NCM), 21/11/2026
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DADOS = os.path.join(RAIZ, 'dados')
@@ -124,6 +126,7 @@ def montar():
     json.dump({'montado_em': datetime.date.today().isoformat(), 'ncm_8_digitos': qtd8, 'data_ncm': meta.get('data_ncm'),
                'rtc_versao': rtc['versao'], 'rtc_data': rtc['data_versao'], 'kb': feitos},
               open(os.path.join(SAIDA, 'versao.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    PAGINAS.update(paginas_ncm.gerar(SAIDA, ncm, rtc, br(meta.get('data_ncm', '')), BASE))
     aplicar_seo()
     for proibido in ('prefers-color-scheme', 'data-theme'):
         for f in os.listdir(SAIDA):
@@ -145,7 +148,7 @@ def aplicar_seo():
         if not 70 <= len(p['desc']) <= 165:
             falha(f'{nome}: descrição com {len(p["desc"])} caracteres (70 a 165)')
         ld = dict(p['ld'], **{'@context': 'https://schema.org', 'url': p['url'], 'description': p['desc'], 'publisher': ORG})
-        if ld['@type'] != 'WebSite':
+        if ld['@type'] in ('WebApplication', 'SoftwareApplication'):
             ld.update({'isAccessibleForFree': True, 'inLanguage': 'pt-BR',
                        'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'BRL'}})
         d = H.escape(p['desc'], quote=True)

@@ -58,9 +58,13 @@ jobs:
         continue-on-error: true   # aviso falhar nao derruba a publicacao (mas o passo fica vermelho no Actions)
         run: |
           sleep 30   # o Pages leva alguns segundos para servir o arquivo da chave
+          # as URLs saem do sitemap publicado: pagina nova entra sozinha no aviso
+          curl -sS --fail https://ferramentas.seldonsystems.com.br/sitemap.xml | python3 -c "
+          import json, re, sys
+          urls = re.findall(r'<loc>\s*([^<\s]+)\s*</loc>', sys.stdin.read())
+          print(json.dumps({'host': 'ferramentas.seldonsystems.com.br', 'key': 'b829fffa100f4133c9eafe86b61c9e61',
+                            'keyLocation': 'https://ferramentas.seldonsystems.com.br/b829fffa100f4133c9eafe86b61c9e61.txt', 'urlList': urls}))
+          " > indexnow.json
+          echo "URLs no aviso: $(python3 -c "import json;print(len(json.load(open('indexnow.json'))['urlList']))")"
           curl -sS --fail-with-body -o /dev/null -w "IndexNow HTTP %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
-            -H "Content-Type: application/json; charset=utf-8" \
-            -d '{"host":"ferramentas.seldonsystems.com.br","key":"b829fffa100f4133c9eafe86b61c9e61",
-                 "keyLocation":"https://ferramentas.seldonsystems.com.br/b829fffa100f4133c9eafe86b61c9e61.txt",
-                 "urlList":["https://ferramentas.seldonsystems.com.br/","https://ferramentas.seldonsystems.com.br/analisador-ncm.html",
-                            "https://ferramentas.seldonsystems.com.br/simulador-impacto.html","https://ferramentas.seldonsystems.com.br/talao-de-notas.html"]}'
+            -H "Content-Type: application/json; charset=utf-8" --data @indexnow.json
