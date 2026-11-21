@@ -138,7 +138,10 @@ def aplicar_seo():
     for nome, p in PAGINAS.items():
         arq = os.path.join(SAIDA, nome)
         h = open(arq, encoding='utf-8').read()
-        titulo = re.search(r'<title>([^<]*)</title>', h).group(1)
+        m = re.search(r'<title[^>]*>([^<]*)</title>', h)
+        if not m:
+            falha(f'{nome}: sem <title>')
+        titulo = H.unescape(m.group(1))  # o título pode vir escapado (&amp;); escapa de novo uma vez só no og:title
         if not 70 <= len(p['desc']) <= 165:
             falha(f'{nome}: descrição com {len(p["desc"])} caracteres (70 a 165)')
         ld = dict(p['ld'], **{'@context': 'https://schema.org', 'url': p['url'], 'description': p['desc'], 'publisher': ORG})
@@ -161,7 +164,7 @@ def aplicar_seo():
             '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + '</script>',
         ])
         h = re.sub(r'<meta name="description"[^>]*>\n?', '', h, count=1)  # a descrição antiga da vitrine sai; vale a daqui
-        h = h.replace('</title>', '</title>\n' + bloco, 1)
+        h = h.replace(m.group(0), m.group(0) + '\n' + bloco, 1)
         for item in ('name="description"', 'rel="canonical"', 'og:title', 'application/ld+json'):
             if h.count(item) != 1:
                 falha(f'{nome}: {item} aparece {h.count(item)} vezes (deve ser 1)')

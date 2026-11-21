@@ -55,9 +55,10 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
       - name: Avisar Bing e outros buscadores (IndexNow)
-        continue-on-error: true   # aviso falhar nao derruba a publicacao
+        continue-on-error: true   # aviso falhar nao derruba a publicacao (mas o passo fica vermelho no Actions)
         run: |
-          curl -sS -o /dev/null -w "IndexNow HTTP %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
+          sleep 30   # o Pages leva alguns segundos para servir o arquivo da chave
+          curl -sS --fail-with-body -o /dev/null -w "IndexNow HTTP %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
             -H "Content-Type: application/json; charset=utf-8" \
             -d '{"host":"ferramentas.seldonsystems.com.br","key":"b829fffa100f4133c9eafe86b61c9e61",
                  "keyLocation":"https://ferramentas.seldonsystems.com.br/b829fffa100f4133c9eafe86b61c9e61.txt",
