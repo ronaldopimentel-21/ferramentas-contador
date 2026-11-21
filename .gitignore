@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 video/*.mp4
 video/_q/
+video/_receita/
+video/_talao/
