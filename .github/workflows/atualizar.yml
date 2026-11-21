@@ -54,3 +54,12 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Avisar Bing e outros buscadores (IndexNow)
+        continue-on-error: true   # aviso falhar nao derruba a publicacao
+        run: |
+          curl -sS -o /dev/null -w "IndexNow HTTP %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d '{"host":"ferramentas.seldonsystems.com.br","key":"b829fffa100f4133c9eafe86b61c9e61",
+                 "keyLocation":"https://ferramentas.seldonsystems.com.br/b829fffa100f4133c9eafe86b61c9e61.txt",
+                 "urlList":["https://ferramentas.seldonsystems.com.br/","https://ferramentas.seldonsystems.com.br/analisador-ncm.html",
+                            "https://ferramentas.seldonsystems.com.br/simulador-impacto.html","https://ferramentas.seldonsystems.com.br/talao-de-notas.html"]}'
