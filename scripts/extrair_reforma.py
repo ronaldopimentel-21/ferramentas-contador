@@ -9,7 +9,7 @@ red={}
 for cl,tb,v,ini,fim in c.execute('select PERE_CLTR_ID,PERE_TBTO_ID,PERE_VALOR,PERE_INICIO_VIGENCIA,PERE_FIM_VIGENCIA from PERCENTUAL_REDUCAO'):
     if vig(ini,fim): red.setdefault(cl,{})[{2:'cbs',3:'ibs',4:'ibsMun'}.get(tb,str(tb))]=v
 ccl={}
-q='''select ct.CLTR_ID,ct.CLTR_CD,ct.CLTR_DESCRICAO,s.SITR_CD,ct.CLTR_INICIO_VIGENCIA,ct.CLTR_FIM_VIGENCIA,
+q='''select ct.CLTR_ID,ct.CLTR_CD,ct.CLTR_DESCRICAO,s.SITR_CD||'|'||coalesce(s.SITR_DESCRICAO,''),ct.CLTR_INICIO_VIGENCIA,ct.CLTR_FIM_VIGENCIA,
  (select group_concat(t.TBTO_SIGLA) from TRIBUTO_SITUACAO_TRIBUTARIA ts join TRIBUTO t on t.TBTO_ID=ts.TRST_TBTO_ID where ts.TRST_SITR_ID=s.SITR_ID)
  from CLASSIFICACAO_TRIBUTARIA ct left join SITUACAO_TRIBUTARIA s on s.SITR_ID=ct.CLTR_SITR_ID'''
 for i,cd,desc,sit,ini,fim,trib in c.execute(q):
@@ -25,8 +25,10 @@ for na,ncm,cl,anx,item,ini,fim in c.execute('select n.NCMA_ID,n.NCMA_NCM_CD,n.NC
         regras.append(r)
 cls={}
 for v in ccl.values():
-    if not v['is'] and any(r['c']==v['cd'] and not r['is'] for r in regras): cls[v['cd']]={'d':v['d'],'cst':v['cst'],'red':v['red']}
-json.dump({'fonte':'Calculadora RTC - Receita Federal (github.com/ReceitaFederal/calculadora-rtc-regime-regular, MIT)',
+    if not v['is'] and any(r['c']==v['cd'] and not r['is'] for r in regras): cls[v['cd']]={'d':v['d'],'cst':v['cst'].split('|')[0],'red':v['red']}
+# todos os cClassTrib vigentes (inclui os que nao dependem de NCM: devolucao, doacao, transferencia, exportacao...), para a tabela completa
+todos=[{'c':x['cd'],'d':x['d'],'cst':x['cst'].split('|')[0],'cstd':x['cst'].split('|')[-1],'red':x['red'],'is':x['is'],'ncm':x['cd'] in cls} for x in sorted(ccl.values(),key=lambda x:x['cd'])]
+json.dump({'todos':todos,'fonte':'Calculadora RTC - Receita Federal (github.com/ReceitaFederal/calculadora-rtc-regime-regular, MIT)',
   'versao':versao[0],'data_versao':versao[1][:10],'extraido_em':hoje,'regras':regras,'cclasstrib':cls},
   open(saida,'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))
 print(versao, len(regras),'regras', len(cls),'cClassTrib usados')

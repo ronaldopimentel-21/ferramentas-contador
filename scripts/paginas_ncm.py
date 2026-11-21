@@ -2,13 +2,12 @@
 
 Por quê: as buscas com volume são "consulta ncm", "ncm + produto" (cerveja, parafuso, perfume...) e "tabela cclasstrib
 atualizada" (Bing Keyword Research, Brasil, ago-nov/2026). A informação já está nos dados das ferramentas; aqui ela vira página
-que o Google lê. PILOTO: só os capítulos de CAPITULOS_PILOTO; o resto só com OK do fundador depois de medir o piloto
-(regra piloto-antes-de-operacao-em-massa). Fonte única dos textos e do visual destas páginas.
+que o Google lê. Piloto de 3 capítulos publicado em 21/11/2026; os 96 capítulos e a tabela completa foram liberados pelo
+fundador no mesmo dia. Fonte única dos textos e do visual destas páginas.
 """
 import html, os, re
 
-CAPITULOS_PILOTO = ['22', '33', '73']   # bebidas (cerveja, refrigerante), perfumaria, obras de ferro e aço (parafusos)
-# Nome curto do capítulo para o título (o Google corta em ~60 caracteres). Capítulo sem nome aqui usa as 3 primeiras palavras.
+# Nome curto do capítulo para o título (o Google corta em ~60 caracteres). Capítulo sem nome aqui usa o nome oficial cortado em 28 caracteres.
 CURTOS = {'22': 'bebidas', '33': 'perfumaria e cosméticos', '73': 'ferro e aço, parafusos'}
 
 CSS = """
@@ -42,6 +41,7 @@ tr.pos td{background:#f1f5f9;font-weight:700}
 .selo{display:inline-block;border:2px solid var(--verde);color:var(--verde);border-radius:5px;padding:1px 7px;font:700 12.5px/1.4 "Segoe UI",sans-serif;white-space:nowrap}
 .selo.is{border-color:#b45309;color:#92400e}
 .sem{color:#6b7785;font-size:13px}
+.caps{columns:2;padding-left:18px}.caps li{margin:3px 0;break-inside:avoid}
 .btn{display:inline-block;background:var(--ciano);color:var(--azul);font-weight:700;text-decoration:none;border-radius:6px;padding:10px 16px}
 details{margin:6px 0}summary{cursor:pointer;color:var(--link)}
 .limite{margin:4px 0 18px;font-size:14px;color:#3d4b5a;border-left:4px solid var(--ciano);padding:4px 0 4px 14px}
@@ -56,6 +56,22 @@ RODAPE = ('<footer><div class="wrap">Seldon Gestão e Tecnologia Ltda. · CNPJ 5
 def _e(s):
     # a descrição oficial do Siscomex vem com marcação (<i>champagne</i>): tira a marcação, mostra só o texto
     return html.escape(re.sub(r'<[^>]+>', '', s or ''), quote=True)
+
+
+def convite(origem):
+    # convite a escritórios de contabilidade: o link passa pelo contador de cliques (ir.seldonsystems.com.br) para medir qual página traz interesse
+    return ('<section class="bloco"><h2>Escritório de contabilidade? Seja parceiro</h2><p>Estas ferramentas são grátis para o contador. '
+            'Quem atende indústria também pode indicar o Seldon Tali (conferência de expedição e apontamento no tablet) aos clientes.</p>'
+            f'<a class="btn" href="https://ir.seldonsystems.com.br/parceiros?o={origem}">Conhecer o programa de parceiros</a></section>')
+
+
+def _curto(cap, titulo_cap):
+    if cap in CURTOS:
+        return CURTOS[cap]
+    nome = titulo_cap.split(';')[0].split(',')[0].strip().lower()
+    if len(nome) > 28:
+        nome = nome[:28].rsplit(' ', 1)[0]
+    return nome
 
 
 def _pagina(titulo, trilha, h1, intro, corpo, data_br):
@@ -98,12 +114,14 @@ def gerar(saida, ncm, rtc, data_br, base):
     """Grava as páginas e devolve o dicionário de SEO de cada uma, no formato de PAGINAS do build.py."""
     regras, cct = rtc['regras'], rtc['cclasstrib']
     vigentes = [x for x in ncm if x.get('data_fim', '9999') >= '2026']
+    caps = sorted({x['codigo'] for x in vigentes if len(x['codigo']) == 2 and x['codigo'].isdigit()})
+    nomes = {c: next(x['descricao'] for x in vigentes if x['codigo'] == c).rstrip('.') for c in caps}
     paginas = {}
     os.makedirs(os.path.join(saida, 'ncm'), exist_ok=True)
 
-    # --- capítulos piloto
-    for cap in CAPITULOS_PILOTO:
-        titulo_cap = next((x['descricao'] for x in vigentes if x['codigo'] == cap), '').rstrip('.')
+    # --- um capítulo por página
+    for k, cap in enumerate(caps):
+        titulo_cap = nomes[cap]
         linhas, n8 = [], 0
         for x in vigentes:
             dig = x['codigo'].replace('.', '')
@@ -122,20 +140,21 @@ def gerar(saida, ncm, rtc, data_br, base):
                 linhas.append(f'<tr><td class="cod">{_e(x["codigo"])}</td><td class="n{min(nivel, 3)}" colspan="2">{_e(desc)}</td></tr>')
         rel = f'ncm/capitulo-{cap}.html'
         h1 = f'NCM capítulo {cap}: {titulo_cap}'
+        ant = f'<a href="/ncm/capitulo-{caps[k-1]}.html">← capítulo {caps[k-1]}</a>' if k else ''
+        prox = f'<a href="/ncm/capitulo-{caps[k+1]}.html">capítulo {caps[k+1]} →</a>' if k + 1 < len(caps) else ''
         corpo = (f'<section class="bloco"><h2>Tabela NCM do capítulo {cap} com a Reforma Tributária</h2>'
                  f'<p>{n8} códigos de 8 dígitos vigentes. A coluna Reforma mostra o cClassTrib e a redução de CBS e IBS quando a base '
                  f'oficial da Receita liga o código a um anexo da Lei Complementar 214/2025.</p>'
                  f'<table><thead><tr><th>Código NCM</th><th>Descrição oficial</th><th>Reforma</th></tr></thead><tbody>'
-                 + ''.join(linhas) + '</tbody></table></section>'
+                 + ''.join(linhas) + f'</tbody></table><p class="sem">{ant} &nbsp; · &nbsp; <a href="/tabela-ncm.html">todos os capítulos</a> &nbsp; · &nbsp; {prox}</p></section>'
                  '<section class="bloco"><h2>Conferir a planilha inteira de uma vez</h2><p>O analisador de NCM confere a lista de '
                  'produtos do cliente (código vigente, 8 dígitos, descrição) e traz o cClassTrib de cada item. Grátis, no navegador.</p>'
-                 '<a class="btn" href="/analisador-ncm.html">Abrir o analisador de NCM</a></section>')
-        trilha = '<a href="/">Ferramentas</a> › <a href="/tabela-cclasstrib.html">Tabela cClassTrib</a> › Capítulo ' + cap
+                 '<a class="btn" href="/analisador-ncm.html">Abrir o analisador de NCM</a></section>' + convite(f'ncm-cap-{cap}'))
+        trilha = '<a href="/">Ferramentas</a> › <a href="/tabela-ncm.html">Tabela NCM</a> › Capítulo ' + cap
         intro = (f'Consulta NCM do capítulo {cap} ({_e(titulo_cap.lower())}): código, descrição oficial do Siscomex e, em cada '
                  f'linha, o cClassTrib e a redução de IBS e CBS da Reforma Tributária. Atualizada todo mês.')
-        open(os.path.join(saida, rel), 'w', encoding='utf-8').write(
-            _pagina(f'NCM capítulo {cap} ({CURTOS.get(cap) or " ".join(titulo_cap.split()[:3]).rstrip(",").lower()}): tabela com cClassTrib',
-                    trilha, h1, intro, corpo, data_br))
+        titulo_pag = f'NCM capítulo {cap} ({_curto(cap, titulo_cap)}): tabela com cClassTrib'
+        open(os.path.join(saida, rel), 'w', encoding='utf-8').write(_pagina(titulo_pag, trilha, h1, intro, corpo, data_br))
         desc_seo = f'Consulta NCM do capítulo {cap} ({titulo_cap.lower()[:48]}): códigos, descrição oficial e cClassTrib com a redução de IBS e CBS.'
         if len(desc_seo) > 165:
             desc_seo = desc_seo[:162].rstrip() + '...'
@@ -143,7 +162,25 @@ def gerar(saida, ncm, rtc, data_br, base):
                         'ld': {'@type': 'Dataset', 'name': h1, 'inLanguage': 'pt-BR',
                                'isBasedOn': 'https://portalunico.siscomex.gov.br/classif/'}}
 
-    # --- tabela cClassTrib por NCM
+    # --- índice: tabela NCM atualizada com todos os capítulos
+    lis = ''.join(f'<li><a href="/ncm/capitulo-{c}.html"><b>{c}</b> {_e(nomes[c])}</a></li>' for c in caps)
+    corpo = ('<section class="bloco"><h2>Capítulos da NCM</h2><p>Escolha o capítulo para ver os códigos de 8 dígitos com o cClassTrib e a '
+             'redução de IBS e CBS da Reforma Tributária.</p><ul class="caps">' + lis + '</ul></section>'
+             '<section class="bloco"><h2>Conferir uma planilha inteira</h2><p>Para a lista de produtos do cliente, o analisador confere '
+             'código, descrição e vigência de cada NCM de uma vez.</p><a class="btn" href="/analisador-ncm.html">Abrir o analisador de NCM</a></section>'
+             + convite('tabela-ncm'))
+    open(os.path.join(saida, 'tabela-ncm.html'), 'w', encoding='utf-8').write(_pagina(
+        'Tabela NCM atualizada com Reforma Tributária · consulta', '<a href="/">Ferramentas</a> › Tabela NCM',
+        'Tabela NCM atualizada, com a Reforma Tributária em cada código',
+        'Consulta NCM completa, por capítulo: tabela oficial do Siscomex com o cClassTrib e a redução de IBS e CBS de cada código.',
+        corpo, data_br))
+    paginas['tabela-ncm.html'] = {
+        'url': f'{base}/tabela-ncm.html',
+        'desc': 'Tabela NCM atualizada, capítulo por capítulo, com cClassTrib e redução de IBS e CBS da Reforma Tributária. Consulta grátis.',
+        'ld': {'@type': 'Dataset', 'name': 'Tabela NCM com a Reforma Tributária', 'inLanguage': 'pt-BR',
+               'isBasedOn': 'https://portalunico.siscomex.gov.br/classif/'}}
+
+    # --- tabela cClassTrib: os ligados ao NCM, depois todos
     por_c = {}
     for r in regras:
         por_c.setdefault(r['c'], []).append(r)
@@ -157,29 +194,46 @@ def gerar(saida, ncm, rtc, data_br, base):
         itens = []
         for r in sorted(rs, key=lambda r: r['p']):
             cap = r['p'][:2]
-            alvo = f' (<a href="/ncm/capitulo-{cap}.html">capítulo {cap}</a>)' if cap in CAPITULOS_PILOTO else ''
+            alvo = f' (<a href="/ncm/capitulo-{cap}.html">capítulo {cap}</a>)' if cap in caps else ''
             itens.append(f'<li><span class="cod">{_e(r["p"])}</span> · {_e(r.get("a", ""))}{" · Imposto Seletivo" if r.get("is") else ""}{alvo}</li>')
         detalhes.append(f'<details><summary>cClassTrib {_e(c)}: {len(rs)} prefixos de NCM ({_e(", ".join(anexos)[:80])})</summary>'
                         f'<ul>{"".join(itens)}</ul></details>')
-    corpo = ('<section class="bloco"><h2>cClassTrib com redução ligada ao NCM</h2>'
+    todos = rtc.get('todos') or []
+    bloco_todos = ''
+    if todos:
+        palavras = ('devol', 'doa', 'bonific', 'transfer', 'exporta', 'importa', 'amostra', 'brinde', 'imobiliz', 'ativo', 'demonstra')
+        ops = [x for x in todos if any(p in x['d'].lower() for p in palavras)]
+        def lin(x):
+            red = x.get('red', {})
+            return (f'<tr><td class="cod">{_e(x["c"])}</td><td>{_e(x["cst"])}</td><td>{_e(x["d"])}</td>'
+                    f'<td>{red.get("cbs", 0):g}% / {red.get("ibs", 0):g}%</td></tr>')
+        cab = '<table><thead><tr><th>cClassTrib</th><th>CST</th><th>Descrição</th><th>Redução CBS / IBS</th></tr></thead><tbody>'
+        por_cst = {}
+        for x in todos:
+            por_cst.setdefault(x['cst'], []).append(x)
+        bloco_todos = (f'<section class="bloco"><h2>cClassTrib de devolução, doação, bonificação, transferência e exportação</h2>'
+                       f'<p>Os cClassTrib que não dependem do NCM e aparecem nas operações do dia a dia do escritório. Escolha pelo código '
+                       f'e confirme a hipótese de uso com o contador responsável.</p>{cab}{"".join(lin(x) for x in ops)}</tbody></table></section>'
+                       f'<section class="bloco"><h2>Todos os {len(todos)} cClassTrib vigentes, por CST</h2>'
+                       + ''.join(f'<details><summary>CST {_e(c)}: {len(xs)} cClassTrib</summary>{cab}{"".join(lin(x) for x in xs)}</tbody></table></details>'
+                                 for c, xs in sorted(por_cst.items())) + '</section>')
+    corpo = (bloco_todos + '<section class="bloco"><h2>cClassTrib com redução ligada ao NCM</h2>'
              f'<p>Base oficial da Calculadora de Tributos da Receita Federal, versão {_e(rtc["versao"])} de {_e(rtc["data_versao"])}. '
-             'Estão aqui os códigos de classificação tributária cuja redução depende do NCM do produto (anexos da LC 214/2025); '
-             'os demais cClassTrib não dependem do NCM e não entram nesta tabela.</p>'
+             'Estão aqui os códigos de classificação tributária cuja redução depende do NCM do produto (anexos da LC 214/2025).</p>'
              '<table><thead><tr><th>cClassTrib</th><th>CST</th><th>Descrição</th><th>Redução CBS / IBS</th><th>Prefixos de NCM</th></tr></thead>'
              '<tbody>' + ''.join(linhas) + '</tbody></table></section>'
              '<section class="bloco"><h2>Quais NCM entram em cada cClassTrib</h2>' + ''.join(detalhes) + '</section>'
-             '<section class="bloco"><h2>Tabela NCM com a coluna Reforma</h2><p>Capítulos já abertos: '
-             + ', '.join(f'<a href="/ncm/capitulo-{c}.html">capítulo {c}</a>' for c in CAPITULOS_PILOTO)
-             + '. Para a lista do cliente inteira, use o <a href="/analisador-ncm.html">analisador de NCM</a>.</p></section>')
+             '<section class="bloco"><h2>Tabela NCM com a coluna Reforma</h2><p>Consulte os códigos de cada capítulo na '
+             '<a href="/tabela-ncm.html">tabela NCM atualizada</a>. Para a lista do cliente inteira, use o '
+             '<a href="/analisador-ncm.html">analisador de NCM</a>.</p></section>' + convite('tabela-cclasstrib'))
     titulo = 'Tabela cClassTrib por NCM atualizada · Reforma Tributária'
     open(os.path.join(saida, 'tabela-cclasstrib.html'), 'w', encoding='utf-8').write(_pagina(
-        titulo, '<a href="/">Ferramentas</a> › Tabela cClassTrib', 'Tabela cClassTrib por NCM, atualizada todo mês',
-        'Código de classificação tributária (cClassTrib), CST e redução de IBS e CBS de cada NCM, direto da base oficial da '
+        titulo, '<a href="/">Ferramentas</a> › Tabela cClassTrib', 'Tabela cClassTrib atualizada todo mês',
+        'Código de classificação tributária (cClassTrib), CST e redução de IBS e CBS, direto da base oficial da '
         'Receita Federal. Grátis, sem cadastro.', corpo, data_br))
     paginas['tabela-cclasstrib.html'] = {
         'url': f'{base}/tabela-cclasstrib.html',
-        'desc': 'Tabela cClassTrib atualizada com o CST e a redução de IBS e CBS de cada NCM, da base oficial da Receita. '
-                'Grátis e atualizada todo mês.',
-        'ld': {'@type': 'Dataset', 'name': 'Tabela cClassTrib por NCM', 'inLanguage': 'pt-BR',
+        'desc': 'Tabela cClassTrib atualizada com o CST e a redução de IBS e CBS, inclusive devolução, doação e bonificação. Base oficial da Receita.',
+        'ld': {'@type': 'Dataset', 'name': 'Tabela cClassTrib', 'inLanguage': 'pt-BR',
                'isBasedOn': 'https://github.com/ReceitaFederal/calculadora-rtc-regime-regular'}}
     return paginas
