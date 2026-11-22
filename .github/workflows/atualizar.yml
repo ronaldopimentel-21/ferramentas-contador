@@ -33,6 +33,8 @@ jobs:
           git clone --depth 1 https://github.com/ReceitaFederal/calculadora-rtc-regime-regular.git /tmp/rtc
           cd /tmp/rtc && mkdir -p calculadora/db
           ./mvnw -q flyway:migrate -Dflyway.configFiles=./flyway/flyway-pro.conf --batch-mode --errors
+      - name: Biblioteca da planilha Excel
+        run: pip install openpyxl==3.1.2
       - name: Baixar NCM, extrair regras e montar
         run: python scripts/build.py --ncm --rtc /tmp/rtc/calculadora/db/calculadora-pro.db
       - name: Guardar os dados novos no repositorio

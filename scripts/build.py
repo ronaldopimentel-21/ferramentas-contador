@@ -10,6 +10,7 @@ o site no ar continua com a última versão boa.
 """
 import json, os, shutil, subprocess, sys, urllib.request, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import planilha_cclasstrib  # planilha Excel de cClassTrib, 22/11/2026
 import paginas_ncm  # páginas abertas (tabela cClassTrib e capítulos NCM), 21/11/2026
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -127,6 +128,10 @@ def montar():
                'rtc_versao': rtc['versao'], 'rtc_data': rtc['data_versao'], 'kb': feitos},
               open(os.path.join(SAIDA, 'versao.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     PAGINAS.update(paginas_ncm.gerar(SAIDA, ncm, rtc, br(meta.get('data_ncm', '')), BASE))
+    os.makedirs(os.path.join(SAIDA, 'downloads'), exist_ok=True)
+    faltou = planilha_cclasstrib.gerar(rtc, os.path.join(SAIDA, 'downloads', 'planilha-cclasstrib-ibs-cbs.xlsx'))
+    if faltou:  # aviso, nunca erro: a Receita pode retirar um código e isso não pode travar a atualização mensal
+        print('AVISO: códigos da seleção de operações que sumiram da base:', ', '.join(faltou))
     aplicar_seo()
     for proibido in ('prefers-color-scheme', 'data-theme'):
         for f in os.listdir(SAIDA):

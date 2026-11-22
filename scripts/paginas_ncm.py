@@ -6,6 +6,7 @@ que o Google lê. Piloto de 3 capítulos publicado em 21/11/2026; os 96 capítul
 fundador no mesmo dia. Fonte única dos textos e do visual destas páginas.
 """
 import html, os, re
+import planilha_cclasstrib  # seleção de operações compartilhada com a planilha Excel
 
 # Nome curto do capítulo para o título (o Google corta em ~60 caracteres). Capítulo sem nome aqui usa o nome oficial cortado em 28 caracteres.
 CURTOS = {'22': 'bebidas', '33': 'perfumaria e cosméticos', '73': 'ferro e aço, parafusos'}
@@ -201,22 +202,41 @@ def gerar(saida, ncm, rtc, data_br, base):
     todos = rtc.get('todos') or []
     bloco_todos = ''
     if todos:
-        palavras = ('devol', 'doa', 'bonific', 'transfer', 'exporta', 'importa', 'amostra', 'brinde', 'imobiliz', 'ativo', 'demonstra')
-        ops = [x for x in todos if any(p in x['d'].lower() for p in palavras)]
+        # A base da Receita traz dois conjuntos na mesma lista: IBS/CBS e Imposto Seletivo (campo `is`). Só o IBS/CBS tem percentual
+        # de redução; o Imposto Seletivo é outra tabela e fica em bloco próprio (erro achado em 22/11/2026: aparecia como "0% / 0%").
+        ibs = [x for x in todos if not x.get('is')]
+        sel = [x for x in todos if x.get('is')]
         def lin(x):
             red = x.get('red', {})
             return (f'<tr><td class="cod">{_e(x["c"])}</td><td>{_e(x["cst"])}</td><td>{_e(x["d"])}</td>'
                     f'<td>{red.get("cbs", 0):g}% / {red.get("ibs", 0):g}%</td></tr>')
+        def lin_is(x):
+            return f'<tr><td class="cod">{_e(x["c"])}</td><td>{_e(x["cst"])}</td><td>{_e(x["d"])}</td></tr>'
         cab = '<table><thead><tr><th>cClassTrib</th><th>CST</th><th>Descrição</th><th>Redução CBS / IBS</th></tr></thead><tbody>'
+        cab_op = ('<table><thead><tr><th>Operação</th><th>cClassTrib</th><th>CST</th><th>Descrição</th><th>Redução CBS / IBS</th></tr></thead><tbody>')
+        ops = sorted(((planilha_cclasstrib.OPERACOES[x['c']], x) for x in ibs if x['c'] in planilha_cclasstrib.OPERACOES),
+                     key=lambda t: (planilha_cclasstrib.ORDEM.index(t[0]), t[1]['c']))
+        lin_op = ''.join(f'<tr><td>{_e(g)}</td><td class="cod">{_e(x["c"])}</td><td>{_e(x["cst"])}</td><td>{_e(x["d"])}</td>'
+                         f'<td>{x.get("red", {}).get("cbs", 0):g}% / {x.get("red", {}).get("ibs", 0):g}%</td></tr>' for g, x in ops)
         por_cst = {}
-        for x in todos:
+        for x in ibs:
             por_cst.setdefault(x['cst'], []).append(x)
-        bloco_todos = (f'<section class="bloco"><h2>cClassTrib de devolução, doação, bonificação, transferência e exportação</h2>'
-                       f'<p>Os cClassTrib que não dependem do NCM e aparecem nas operações do dia a dia do escritório. Escolha pelo código '
-                       f'e confirme a hipótese de uso com o contador responsável.</p>{cab}{"".join(lin(x) for x in ops)}</tbody></table></section>'
-                       f'<section class="bloco"><h2>Todos os {len(todos)} cClassTrib vigentes, por CST</h2>'
+        devol = [x['c'] for x in sel if 'devol' in x['d'].lower()]
+        nota_devol = (f' Na base da Receita, a devolução ({", ".join(devol)}) só tem cClassTrib no Imposto Seletivo.' if devol else '')
+        bloco_todos = (f'<section class="bloco"><h2>cClassTrib de bonificação, doação, transferência e exportação</h2>'
+                       f'<p>Os cClassTrib de IBS e CBS que aparecem nas operações do dia a dia do escritório (seleção da Seldon, não é lista oficial). '
+                       f'Escolha pelo código e confirme a hipótese de uso com o contador responsável. '
+                       f'<a href="/downloads/planilha-cclasstrib-ibs-cbs.xlsx">Baixar em Excel</a> (operações, IBS e CBS, Imposto Seletivo).</p>'
+                       f'{cab_op}{lin_op}</tbody></table></section>'
+                       f'<section class="bloco"><h2>Todos os {len(ibs)} cClassTrib de IBS e CBS, por CST</h2>'
                        + ''.join(f'<details><summary>CST {_e(c)}: {len(xs)} cClassTrib</summary>{cab}{"".join(lin(x) for x in xs)}</tbody></table></details>'
-                                 for c, xs in sorted(por_cst.items())) + '</section>')
+                                 for c, xs in sorted(por_cst.items())) + '</section>'
+                       + (f'<section class="bloco"><h2>{len(sel)} cClassTrib do Imposto Seletivo (tabela à parte)</h2>'
+                          f'<p>O Imposto Seletivo tem classificação própria e a base da Receita não traz percentual de redução para ela. '
+                          f'Não use estes códigos no IBS e na CBS.{nota_devol}</p>'
+                          f'<details><summary>Ver os {len(sel)} códigos do Imposto Seletivo</summary>'
+                          f'<table><thead><tr><th>cClassTrib (IS)</th><th>CST (IS)</th><th>Descrição</th></tr></thead><tbody>'
+                          f'{"".join(lin_is(x) for x in sel)}</tbody></table></details></section>' if sel else ''))
     corpo = (bloco_todos + '<section class="bloco"><h2>cClassTrib com redução ligada ao NCM</h2>'
              f'<p>Base oficial da Calculadora de Tributos da Receita Federal, versão {_e(rtc["versao"])} de {_e(rtc["data_versao"])}. '
              'Estão aqui os códigos de classificação tributária cuja redução depende do NCM do produto (anexos da LC 214/2025).</p>'
@@ -233,7 +253,7 @@ def gerar(saida, ncm, rtc, data_br, base):
         'Receita Federal. Grátis, sem cadastro.', corpo, data_br))
     paginas['tabela-cclasstrib.html'] = {
         'url': f'{base}/tabela-cclasstrib.html',
-        'desc': 'Tabela cClassTrib atualizada com o CST e a redução de IBS e CBS, inclusive devolução, doação e bonificação. Base oficial da Receita.',
+        'desc': 'Tabela cClassTrib atualizada com o CST e a redução de IBS e CBS, inclusive bonificação, doação e exportação. Base oficial da Receita.',
         'ld': {'@type': 'Dataset', 'name': 'Tabela cClassTrib', 'inLanguage': 'pt-BR',
                'isBasedOn': 'https://github.com/ReceitaFederal/calculadora-rtc-regime-regular'}}
     return paginas

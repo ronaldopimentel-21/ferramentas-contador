@@ -14,6 +14,8 @@ Cada ferramenta é um arquivo HTML único: roda no navegador, sem servidor e sem
 Federal, extrai as regras de redução por NCM, remonta as páginas e publica. Se um dado vier fora do esperado, nada é publicado e o site fica
 na última versão boa.
 
+Planilha Excel de cClassTrib (`/downloads/planilha-cclasstrib-ibs-cbs.xlsx`): gerada a cada montagem por `scripts/planilha_cclasstrib.py`, com IBS/CBS e Imposto Seletivo em abas separadas. Teste: `python scripts/test_cclasstrib.py` (a base da Receita mistura IBS/CBS e Imposto Seletivo na mesma lista; só IBS/CBS tem percentual de redução).
+
 Local: `python scripts/build.py` (usa `dados/`); `--ncm` baixa a tabela; `--rtc <calculadora-pro.db>` extrai as regras.
 
 ## Fontes e licenças
